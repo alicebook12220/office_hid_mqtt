@@ -70,7 +70,7 @@ while True:
             video_status = 1
             today = datetime.date.today()
             now = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-            img_path = "not_keyIn_img/" + str(today) + "/"
+            img_path = "keyIn_video/" + str(today) + "/"
             isExist = os.path.exists(img_path)
             if not isExist:
                 os.makedirs(img_path)
