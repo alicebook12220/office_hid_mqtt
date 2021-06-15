@@ -5,6 +5,7 @@ import datetime
 import time
 import glob
 import os
+from collections import deque
 
 net = cv2.dnn_DetectionModel('cfg/yolov4-tiny.cfg', 'model/yolov4-tiny.weights')
 #net = cv2.dnn_DetectionModel('cfg/enet-coco.cfg', 'model/enetb0-coco_final.weights')
@@ -23,19 +24,26 @@ keyIn_status = 0
 personIn_time = 0
 person_img = 0
 person_status = 0
+person_in = 0
 person_out = 0
 person_out_time = 0
 out_status = 0
 out_count = 0
 video_status = 0
+move_pos = deque(maxlen=60)
+move_count = 0
+hid = ""
 def on_message(client, userdata, msg):
-    global keyIn_status
+    global keyIn_status, hid
     print(msg.topic + " " + str(msg.payload))
-    if msg.payload.decode()== 'key_in':
+    keyIn_status = 1
+    hid = msg.payload.decode()
+    '''
+    if msg.payload.decode() == 'key_in':
         print("key_in")
         keyIn_status = 1
         #client.publish("callback_N1",result,0)
-
+    '''
 def on_publish(client, userdata, mid):
     print("On onPublish: qos = %d" % mid)
 
@@ -76,15 +84,24 @@ while True:
             old_confidence = confidence
             pstring = str(int(100 * confidence)) + "%" #信心度
             x_left, y_top, width, height = box
-
-            if person_status == 0 and x_left > (640 / 4) and x_left < (640 / 4) * 3 and (width * height) > (640 * 480) / 5:
+            if person_status == 0 and (width * height) > (640 * 480) / 5:
+                move_pos.append((x_left + width)/2)
+                move_count = move_count + 1
+                if move_count == 10:
+                    move_count = 0
+                    if move_pos[0] - move_pos[len(move_pos) - 1] > 0:
+                        person_in = 1 #由右往左
+                    else:
+                        person_in = 0 #由左往右
+                    move_pos.clear()
+            if person_status == 0 and person_in == 1 and x_left > (640 / 4) and x_left < (640 / 4) * 3 and (width * height) > (640 * 480) / 5:
                 person_status = 1
                 #personIn_time = time.time()
-            elif person_status == 1:
-                x_left, y_top, width, height = box
-                if (width * height) > (640 * 480) / 5 * 2:
-                    #person_img = frame.copy()
-                    pass
+            #elif person_status == 1:
+            #    x_left, y_top, width, height = box
+            #    if (width * height) > (640 * 480) / 5 * 2:
+            #        #person_img = frame.copy()
+            #        pass
 
             boundingBox = [
                     (x_left, y_top), #左上頂點
@@ -107,18 +124,25 @@ while True:
         out_count = out_count + 1    
         if keyIn_status == 1 and out_count > 3:
             print("OK")
+            person_in = 0
             person_status = 0
             person_out = 0
             keyIn_status = 0
             video_status = 0
             out.release()
-            os.remove(img_path + now + ".avi")
+            hid_video_path = img_path + hid + "/"
+            isExist = os.path.exists(hid_video_path)
+            if not isExist:
+                os.makedirs(hid_video_path)
+            #移動檔案
+            os.rename(img_path + now + ".avi",hid_video_path + now + ".avi")
         elif person_status == 1 and keyIn_status == 0 and out_count > 3:
             if person_out == 0:
                 person_out = 1
                 person_out_time = time.time()
-            if (time.time() - person_out_time) > 1:
+            if (time.time() - person_out_time) > 0.5:
                 print("NG")
+                person_in = 0
                 person_status = 0
                 person_out = 0
                 video_status = 0
