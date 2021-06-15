@@ -77,7 +77,7 @@ while True:
             pstring = str(int(100 * confidence)) + "%" #信心度
             x_left, y_top, width, height = box
 
-            if person_status == 0 and x_left > (640 / 4) and x_left < (640 / 4) * 3:
+            if person_status == 0 and x_left > (640 / 4) and x_left < (640 / 4) * 3 and (width * height) > (640 * 480) / 5:
                 person_status = 1
                 #personIn_time = time.time()
             elif person_status == 1:
