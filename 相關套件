@@ -1,3 +1,4 @@
 sudo apt-get install mosquitto
 sudo apt-get install mosquitto-clients
 pip3 install PyMySQL
+pip3 install Flask
