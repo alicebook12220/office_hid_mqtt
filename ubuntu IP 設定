@@ -1,0 +1,6 @@
+#nano IP 設定
+Address          Netmask  Gareway
+192.168.50.225   24       192.168.50.13
+
+DNS
+192.168.50.13
