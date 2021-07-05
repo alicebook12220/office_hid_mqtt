@@ -21,6 +21,7 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 #fourcc = cv2.VideoWriter_fourcc(*'XVID')
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
+person_size = 5
 keyIn_status = 0
 personIn_time = 0
 person_img = 0
@@ -37,7 +38,7 @@ is_first = 1
 to_left = 0
 to_right = 0
 textColor = (255, 0, 0)
-
+is_person = 0
 hid = ""
 def on_message(client, userdata, msg):
     global keyIn_status, hid
@@ -59,13 +60,12 @@ client.loop_start()
 while True:
     ret, frame = cap.read()
     show_img = frame.copy()
-    #frame = cv2.resize(frame, (416,416))
+    is_person = 0
     classes, confidences, boxes = net.detect(frame, confThreshold=0.1, nmsThreshold=0.5)
     if 0 in classes:
         if keyIn_status == 1:
             cv2.putText(show_img, "OK", (10, 75), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 255, 0), 2)
         #person_sum = np.sum(classes == 0)
-        out_count = 0
         if person_status == 1 and video_status == 0:
             video_status = 1
             today = datetime.date.today()
@@ -84,7 +84,10 @@ while True:
             old_confidence = confidence
             pstring = str(int(100 * confidence)) + "%" #信心度
             x_left, y_top, width, height = box
-            if person_status == 0 and is_first == 1 and (width * height) > (640 * 480) / 10:
+            if (width * height) > (640 * 480) / person_size:
+                is_person = 1
+                out_count = 0
+            if person_status == 0 and is_first == 1 and (width * height) > (640 * 480) / person_size:
                 is_first = 0
                 print(x_left + (width / 2))
                 if x_left + (width / 2) > (640 / 2):
@@ -97,6 +100,8 @@ while True:
                     person_in = 0 #由左往右
                     to_left = 0
                     to_right = 1
+            
+                
             '''
             if person_status == 0 and (width * height) > (640 * 480) / 10:
                 move_pos.append(x_left + (width / 2))
@@ -132,7 +137,7 @@ while True:
             cv2.rectangle(show_img, boundingBox[0], boundingBox[2], rectColor, 2)
             cv2.putText(show_img, pstring, textCoord, cv2.FONT_HERSHEY_DUPLEX, 1, rectColor, 2)
         
-    else:
+    if 0 not in classes or is_person == 0:
         out_count = out_count + 1    
         if keyIn_status == 1 and out_count > 3:
             print("OK")
