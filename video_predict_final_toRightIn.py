@@ -21,7 +21,7 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 #fourcc = cv2.VideoWriter_fourcc(*'XVID')
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
-person_size = 5
+person_size = 12
 keyIn_status = 0
 personIn_time = 0
 person_img = 0
@@ -40,15 +40,17 @@ to_right = 0
 textColor = (255, 0, 0)
 is_person = 0
 NG_count = 0
+OK_count = 0
 hid = ""
 
 date_old = datetime.date.today()
 today = datetime.date.today()
 
 def on_message(client, userdata, msg):
-    global keyIn_status, hid
+    global keyIn_status, hid, OK_count
     print(msg.topic + " " + msg.payload.decode())
     keyIn_status = 1
+    OK_count = OK_count + 1
     hid = msg.payload.decode()
 
 HOST = "localhost"
@@ -58,27 +60,39 @@ mqtt_topic = "V5F_green" #TOPIC name
 client = mqtt.Client()
 client.on_message = on_message
 
-client.connect(HOST, PORT, 600)
+client.connect(HOST, PORT, 65535)
 client.subscribe(mqtt_topic, qos=0)
 client.loop_start()
 
+time_start = time.time()
+
 while True:
     ret, frame = cap.read()
+    show_img_o = frame.copy()
     show_img = frame.copy()
     is_person = 0
-    today = datetime.date.today()
-    if str(today) != str(date_old):
-        NG_count = 0
+    if time.time() - time_start > 10:
+        time_start = time.time()
+        today = datetime.date.today()
+        if str(today) != str(date_old):
+            date_old = datetime.date.today()
+            NG_count = 0
+            OK_count = 0
     classes, confidences, boxes = net.detect(frame, confThreshold=0.1, nmsThreshold=0.5)
     if 0 in classes:
         if keyIn_status == 1:
+            textColor = (0, 255, 0)
+            rectColor = (0, 255, 0)
             cv2.putText(show_img, "OK", (10, 75), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 255, 0), 2)
+        else:
+            rectColor = (0, 0, 255)
+            textColor = (0, 0, 255)
         #person_sum = np.sum(classes == 0)
         if person_status == 1 and video_status == 0:
             video_status = 1
-            today = datetime.date.today()
+            video_today = datetime.date.today()
             now = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
-            img_path = "keyIn_video/" + str(today) + "/"
+            img_path = "keyIn_video/" + str(video_today) + "/"
             isExist = os.path.exists(img_path)
             if not isExist:
                 os.makedirs(img_path)
@@ -97,14 +111,14 @@ while True:
                 out_count = 0
             if person_status == 0 and is_first == 1 and (width * height) > (640 * 480) / person_size:
                 is_first = 0
-                print(x_left + (width / 2))
+                #print(x_left + (width / 2))
                 if x_left + (width / 2) > (640 / 2):
-                    print("to left")
+                    #print("to left")
                     person_in = 0 #由右往左
                     to_left = 1
                     to_right = 0
                 else:
-                    print("to right")
+                    #print("to right")
                     person_in = 1 #由左往右
                     to_left = 0
                     to_right = 1
@@ -139,7 +153,6 @@ while True:
                     (x_left + width, y_top) #右上頂點
             ]
             
-            rectColor = (0, 0, 255)
             textCoord = (x_left, y_top - 10) #文字位置
             # 在影像中標出Box邊界和類別、信心度
             cv2.rectangle(show_img, boundingBox[0], boundingBox[2], rectColor, 2)
@@ -147,7 +160,7 @@ while True:
         
     if 0 not in classes or is_person == 0:
         out_count = out_count + 1    
-        if keyIn_status == 1 and out_count > 3:
+        if keyIn_status == 1 and out_count > 10:
             print("OK")
             person_in = 0
             person_status = 0
@@ -163,7 +176,7 @@ while True:
                     os.makedirs(hid_video_path)
                 #移動檔案
                 os.rename(img_path + now + ".mp4",hid_video_path + now + ".mp4")
-        elif person_status == 1 and keyIn_status == 0 and out_count > 3:
+        elif person_status == 1 and keyIn_status == 0 and out_count > 10:
             if person_out == 0:
                 person_out = 1
                 person_out_time = time.time()
@@ -188,23 +201,24 @@ while True:
                 print(img_path + now + ".jpg")
                 cv2.imshow('NG', person_img)
                 '''
-        elif out_count > 3:
+        elif out_count > 10:
             is_first = 1
             to_left = 0
             to_right = 0
         #    move_pos.clear()
-    cv2.putText(show_img, str(NG_count), (600,25), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+    cv2.putText(show_img, "NG:"+str(NG_count), (525,25), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 0, 255), 2)
+    cv2.putText(show_img, "OK:"+str(OK_count), (525,75), cv2.FONT_HERSHEY_DUPLEX, 1, (0, 255, 0), 2)
     if to_left == 1:
         pstring = "Out"
-        cv2.putText(show_img, pstring, (10,25), cv2.FONT_HERSHEY_DUPLEX, 1, textColor, 2)
+        cv2.putText(show_img, pstring, (10,25), cv2.FONT_HERSHEY_DUPLEX, 1, (255,0,0), 2)
     elif to_right == 1:
-        pstring = "In"
-        cv2.putText(show_img, pstring, (10,25), cv2.FONT_HERSHEY_DUPLEX, 1, textColor, 2)
+        pstring = "in"
+        cv2.putText(show_img, pstring, (10,25), cv2.FONT_HERSHEY_DUPLEX, 1, (255,0,0), 2)
     
     #if video_status == 1:
     #    out.write(show_img)
-    date_old = datetime.date.today()
-    cv2.imshow('frame', show_img)
+    cv2.imshow('predict', show_img)
+    cv2.imshow('show', show_img_o)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
