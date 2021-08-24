@@ -70,7 +70,7 @@ def submit():
         con.commit()
         cur.close()
         con.close()       
-        
+        '''
         #con = pymysql.connect(SERVER,USERNAME,PASSWORD,DATABASE)
         con = pymysql.connect(**db_settings)
         cur = con.cursor()  
@@ -82,7 +82,7 @@ def submit():
             print('NG')
         cur.close()
         con.close()              
-        
+        '''
 
         ### query whitelist
         con_query_whitelist  = pymysql.connect(**db_settings )
