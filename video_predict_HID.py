@@ -50,7 +50,7 @@ app = Flask(__name__)
 
 @app.route("/", methods=['GET','POST'])
 def submit():
-    global TEXT
+    global TEXT, HOST, PORT, mqtt_topic
     j = "False"
     alarm_msg = " "    
     if request.method=='POST':
