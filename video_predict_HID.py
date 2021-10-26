@@ -11,9 +11,9 @@ HOST = "localhost"
 PORT = 1883
 mqtt_topic = "V5F_green" #TOPIC name
 
-client = mqtt.Client()
-client.connect(HOST, PORT, 600)
-client.publish(mqtt_topic, "Hello")
+#client = mqtt.Client()
+#client.connect(HOST, PORT, 600)
+#client.publish(mqtt_topic, "Hello")
 
 
 
@@ -56,8 +56,10 @@ def submit():
     if request.method=='POST':
         time_now = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
         hid = str(request.values.get('hid'))
+        client = mqtt.Client()
+        client.connect(HOST, PORT, 65535)
         client.publish(mqtt_topic, hid)
-        print(hid)
+        client.disconnect()
         
         ### insert hid_record
         con = pymysql.connect(**db_settings)
