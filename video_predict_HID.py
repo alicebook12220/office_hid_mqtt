@@ -12,13 +12,13 @@ PORT = 1883
 mqtt_topic = "V5F_green" #TOPIC name
 
 client = mqtt.Client()
-client.connect(HOST, PORT, 600)
-client.
+client.connect(HOST, PORT)
+client.loop_start()
 #client.publish(mqtt_topic, "Hello")
 
 
 
-
+hid = "error"
 TEXT = "請刷卡" # 網頁預設文字
 ### DATABASE Information
 dbconfig = ConfigParser()
@@ -51,13 +51,14 @@ app = Flask(__name__)
 
 @app.route("/", methods=['GET','POST'])
 def submit():
-    global TEXT, HOST, PORT, mqtt_topic
+    global TEXT
     j = "False"
     alarm_msg = " "    
     if request.method=='POST':
         time_now = time.strftime("%Y-%m-%d %H:%M:%S",time.localtime())
         hid = str(request.values.get('hid'))
         client.publish(mqtt_topic, hid)
+        #print(hid)
         
         ### insert hid_record
         con = pymysql.connect(**db_settings)
@@ -83,7 +84,7 @@ def submit():
         cur.close()
         con.close()              
         '''
-
+        
         ### query whitelist
         con_query_whitelist  = pymysql.connect(**db_settings )
         cur_query_whitelist  = con_query_whitelist.cursor()
