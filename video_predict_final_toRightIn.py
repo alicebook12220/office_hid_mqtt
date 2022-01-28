@@ -5,7 +5,36 @@ import datetime
 import time
 import glob
 import os
+
+from configparser import ConfigParser
 #from collections import deque
+
+dbconfig = ConfigParser()
+dbconfig.read("config.ini")
+SERVER = dbconfig["DATABASE"]["SERVER"]
+DATABASE = dbconfig["DATABASE"]["DATABASE"]
+PORT = dbconfig["DATABASE"]["PORT"]
+USERNAME = dbconfig["DATABASE"]["USERNAME"]
+PASSWORD = dbconfig["DATABASE"]["PASSWORD"]
+location_number = dbconfig["SETTING"]["location_number"]
+insert_table_name = "hid_record_count"
+
+db_settings={
+    "host":SERVER,
+    "port":int(PORT),
+    "user":USERNAME,
+    "password":PASSWORD,
+    "db":DATABASE,
+    "charset":"utf8"
+    }
+
+def record_count_upload(today=None, location=None, OK_count=None, NG_count=None):
+    con = pymysql.connect(**db_settings)
+    cur = con.cursor()      
+    cur.execute(f"INSERT INTO {insert_table_name} values ('{today}','{location}','{OK_count}','{NG_count}')")
+    con.commit()
+    cur.close()
+    con.close()
 
 net = cv2.dnn_DetectionModel('cfg/yolov4-tiny.cfg', 'model/yolov4-tiny.weights')
 #net = cv2.dnn_DetectionModel('cfg/enet-coco.cfg', 'model/enetb0-coco_final.weights')
@@ -21,7 +50,7 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 #fourcc = cv2.VideoWriter_fourcc(*'XVID')
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
-person_size = 12
+person_size = 3.5
 keyIn_status = 0
 personIn_time = 0
 person_img = 0
@@ -75,6 +104,7 @@ while True:
         time_start = time.time()
         today = datetime.date.today()
         if str(today) != str(date_old):
+            record_count_upload(date_old, location_number, OK_count, NG_count)
             date_old = datetime.date.today()
             NG_count = 0
             OK_count = 0
