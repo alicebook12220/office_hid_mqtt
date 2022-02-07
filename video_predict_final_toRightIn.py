@@ -5,9 +5,9 @@ import datetime
 import time
 import glob
 import os
-
+import pymysql
+import datetime
 from configparser import ConfigParser
-#from collections import deque
 
 dbconfig = ConfigParser()
 dbconfig.read("config.ini")
@@ -28,13 +28,15 @@ db_settings={
     "charset":"utf8"
     }
 
-def record_count_upload(today=None, location=None, OK_count=None, NG_count=None):
+def dataset_upload(today=None, location=None, OK_count=None, NG_count=None):
     con = pymysql.connect(**db_settings)
     cur = con.cursor()      
     cur.execute(f"INSERT INTO {insert_table_name} values ('{today}','{location}','{OK_count}','{NG_count}')")
     con.commit()
     cur.close()
     con.close()
+
+#from collections import deque
 
 net = cv2.dnn_DetectionModel('cfg/yolov4-tiny.cfg', 'model/yolov4-tiny.weights')
 #net = cv2.dnn_DetectionModel('cfg/enet-coco.cfg', 'model/enetb0-coco_final.weights')
@@ -70,7 +72,7 @@ textColor = (255, 0, 0)
 is_person = 0
 NG_count = 0
 OK_count = 0
-hid = ""
+hid = "error"
 
 date_old = datetime.date.today()
 today = datetime.date.today()
@@ -89,7 +91,7 @@ mqtt_topic = "V5F_green" #TOPIC name
 client = mqtt.Client()
 client.on_message = on_message
 
-client.connect(HOST, PORT, 65535)
+client.connect(HOST, PORT, 65530)
 client.subscribe(mqtt_topic, qos=0)
 client.loop_start()
 
@@ -104,11 +106,11 @@ while True:
         time_start = time.time()
         today = datetime.date.today()
         if str(today) != str(date_old):
-            record_count_upload(date_old, location_number, OK_count, NG_count)
+            dataset_upload(date_old, location_number, OK_count, NG_count)
             date_old = datetime.date.today()
             NG_count = 0
             OK_count = 0
-    classes, confidences, boxes = net.detect(frame, confThreshold=0.1, nmsThreshold=0.5)
+    classes, confidences, boxes = net.detect(frame, confThreshold=0.3, nmsThreshold=0.5)
     if 0 in classes:
         if keyIn_status == 1:
             textColor = (0, 255, 0)
@@ -121,14 +123,14 @@ while True:
         if person_status == 1 and video_status == 0:
             video_status = 1
             video_today = datetime.date.today()
-            now = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+            now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             img_path = "keyIn_video/" + str(video_today) + "/"
             isExist = os.path.exists(img_path)
             if not isExist:
                 os.makedirs(img_path)
             out = cv2.VideoWriter(img_path + now + ".mp4", fourcc, 12.0, (640, 480))
-        if video_status == 1:
-            out.write(show_img)
+        #if video_status == 1:
+        #    out.write(show_img)
         for classId, confidence, box in zip(classes.flatten(), confidences.flatten(), boxes):
             if classId != 0:
                 continue
@@ -255,5 +257,4 @@ while True:
 if video_status == 1:
     out.release()
 cap.release()
-
 
