@@ -74,7 +74,7 @@ NG_count = 0
 OK_count = 0
 save_count = 0
 save_stop = 30
-hid = "error"
+hid = ""
 img_path = ""
 
 date_old = datetime.date.today()
@@ -135,7 +135,7 @@ while True:
         if video_status == 1:
             if save_count < save_stop:
                 out.write(show_img)
-            save_count += 1
+                save_count += 1
         for classId, confidence, box in zip(classes.flatten(), confidences.flatten(), boxes):
             if classId != 0:
                 continue
@@ -196,8 +196,8 @@ while True:
         
     if 0 not in classes or is_person == 0:
         out_count = out_count + 1    
-        if keyIn_status == 1: #and out_count > 10:
-            print("OK")
+        if keyIn_status == 1 and out_count > 5:
+            #print("OK")
             person_in = 0
             person_status = 0
             person_out = 0
@@ -205,6 +205,7 @@ while True:
             is_first = 1
             if video_status == 1:
                 video_status = 0
+                save_count = 0
                 out.release()
                 '''
                 hid_video_path = img_path + hid + "/"
@@ -216,12 +217,12 @@ while True:
                 '''
                 #刪除檔案
                 os.remove(img_path + now + ".mp4")
-        elif person_status == 1 and keyIn_status == 0 and out_count > 10:
+        elif person_status == 1 and keyIn_status == 0 and out_count > 5:
             if person_out == 0:
                 person_out = 1
                 person_out_time = time.time()
             if (time.time() - person_out_time) > 0.5:
-                print("NG")
+                #print("NG")
                 person_in = 0
                 person_status = 0
                 person_out = 0
@@ -229,6 +230,7 @@ while True:
                 NG_count = NG_count + 1
                 if video_status == 1:
                     video_status = 0
+                    save_count = 0
                     out.release()
                 '''
                 today = datetime.date.today()
@@ -241,7 +243,7 @@ while True:
                 print(img_path + now + ".jpg")
                 cv2.imshow('NG', person_img)
                 '''
-        elif out_count > 10:
+        elif out_count > 5:
             is_first = 1
             to_left = 0
             to_right = 0
