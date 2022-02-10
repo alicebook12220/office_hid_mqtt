@@ -72,7 +72,10 @@ textColor = (255, 0, 0)
 is_person = 0
 NG_count = 0
 OK_count = 0
+save_count = 0
+save_stop = 30
 hid = "error"
+img_path = ""
 
 date_old = datetime.date.today()
 today = datetime.date.today()
@@ -129,12 +132,13 @@ while True:
             if not isExist:
                 os.makedirs(img_path)
             out = cv2.VideoWriter(img_path + now + ".mp4", fourcc, 12.0, (640, 480))
-        #if video_status == 1:
-        #    out.write(show_img)
+        if video_status == 1:
+            if save_count < save_stop:
+                out.write(show_img)
+            save_count += 1
         for classId, confidence, box in zip(classes.flatten(), confidences.flatten(), boxes):
             if classId != 0:
                 continue
-            
             old_confidence = confidence
             pstring = str(int(100 * confidence)) + "%" #信心度
             x_left, y_top, width, height = box
@@ -192,7 +196,7 @@ while True:
         
     if 0 not in classes or is_person == 0:
         out_count = out_count + 1    
-        if keyIn_status == 1 and out_count > 10:
+        if keyIn_status == 1: #and out_count > 10:
             print("OK")
             person_in = 0
             person_status = 0
@@ -202,12 +206,16 @@ while True:
             if video_status == 1:
                 video_status = 0
                 out.release()
+                '''
                 hid_video_path = img_path + hid + "/"
                 isExist = os.path.exists(hid_video_path)
                 if not isExist:
                     os.makedirs(hid_video_path)
                 #移動檔案
                 os.rename(img_path + now + ".mp4",hid_video_path + now + ".mp4")
+                '''
+                #刪除檔案
+                os.remove(img_path + now + ".mp4")
         elif person_status == 1 and keyIn_status == 0 and out_count > 10:
             if person_out == 0:
                 person_out = 1
@@ -246,9 +254,7 @@ while True:
     elif to_right == 1:
         pstring = "in"
         cv2.putText(show_img, pstring, (10,25), cv2.FONT_HERSHEY_DUPLEX, 1, (255,0,0), 2)
-    
-    #if video_status == 1:
-    #    out.write(show_img)
+        
     cv2.imshow('predict', show_img)
     cv2.imshow('show', show_img_o)
     if cv2.waitKey(1) & 0xFF == ord('q'):
