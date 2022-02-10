@@ -196,7 +196,7 @@ while True:
         
     if 0 not in classes or is_person == 0:
         out_count = out_count + 1    
-        if keyIn_status == 1 and out_count > 5:
+        if keyIn_status == 1 and out_count > 10:
             #print("OK")
             person_in = 0
             person_status = 0
@@ -217,7 +217,7 @@ while True:
                 '''
                 #刪除檔案
                 os.remove(img_path + now + ".mp4")
-        elif person_status == 1 and keyIn_status == 0 and out_count > 5:
+        elif person_status == 1 and keyIn_status == 0 and out_count > 10:
             if person_out == 0:
                 person_out = 1
                 person_out_time = time.time()
@@ -243,7 +243,7 @@ while True:
                 print(img_path + now + ".jpg")
                 cv2.imshow('NG', person_img)
                 '''
-        elif out_count > 5:
+        elif out_count > 10:
             is_first = 1
             to_left = 0
             to_right = 0
