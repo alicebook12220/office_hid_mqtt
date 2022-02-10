@@ -106,7 +106,7 @@ def submit():
         cur = con.cursor()
         
         try:
-            cur.execute(f"select * FROM {request_table_name} WHERE HIDCARD='{hid}'")
+            cur.execute(f"select * FROM {request_table_name} WHERE HIDCARD='{hid}' LIMIT 0,1")
             DEPARTMENT,WORKID,NAME,HIDCARD,ABGROUP,COLOR = cur.fetchone()
             if COLOR == color:
                 judge = 'OK'
