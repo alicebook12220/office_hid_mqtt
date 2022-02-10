@@ -51,7 +51,7 @@ cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 #fourcc = cv2.VideoWriter_fourcc(*'XVID')
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 
-person_size = 4
+person_size = 5.5
 keyIn_status = 0
 personIn_time = 0
 person_img = 0
@@ -196,7 +196,7 @@ while True:
     if 0 not in classes or is_person == 0:
         out_count = out_count + 1    
         if keyIn_status == 1 and out_count > 10:
-            print("OK")
+            #print("OK")
             person_in = 0
             person_status = 0
             person_out = 0
@@ -221,7 +221,7 @@ while True:
                 person_out = 1
                 person_out_time = time.time()
             if (time.time() - person_out_time) > 0.5:
-                print("NG")
+                #print("NG")
                 person_in = 0
                 person_status = 0
                 person_out = 0
