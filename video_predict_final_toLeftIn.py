@@ -72,9 +72,9 @@ is_person = 0
 NG_count = 0
 OK_count = 0
 save_count = 0
-save_stop = 9
+save_stop = 30
 hid = ""
-
+img_path = ""
 date_old = datetime.date.today()
 today = datetime.date.today()
 
@@ -121,19 +121,19 @@ while True:
             rectColor = (0, 0, 255)
             textColor = (0, 0, 255)
         #person_sum = np.sum(classes == 0)
-        video_today = datetime.date.today()
-        now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        img_path = "keyIn_video/" + str(video_today) + "/"
         if person_status == 1 and video_status == 0:
             video_status = 1
+            video_today = datetime.date.today()
+            now = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            img_path = "keyIn_video/" + str(video_today) + "/"
             isExist = os.path.exists(img_path)
             if not isExist:
                 os.makedirs(img_path)
-            #out = cv2.VideoWriter(img_path + now + ".mp4", fourcc, 12.0, (640, 480))
+            out = cv2.VideoWriter(img_path + now + ".mp4", fourcc, 12.0, (640, 480))
         if video_status == 1:
-            if save_count % 3 == 0 and save_count < save_stop:
-                cv2.imwrite(img_path + now + ".jpg")
-            #out.write(show_img)
+            if save_count < save_stop:
+                out.write(show_img)
+                save_count += 1
         for classId, confidence, box in zip(classes.flatten(), confidences.flatten(), boxes):
             if classId != 0:
                 continue
@@ -204,13 +204,18 @@ while True:
             is_first = 1
             if video_status == 1:
                 video_status = 0
-                #out.release()
+                save_count = 0
+                out.release()
+                '''
                 hid_video_path = img_path + hid + "/"
                 isExist = os.path.exists(hid_video_path)
                 if not isExist:
                     os.makedirs(hid_video_path)
                 #移動檔案
                 os.rename(img_path + now + ".mp4",hid_video_path + now + ".mp4")
+                '''
+                #刪除檔案
+                os.remove(img_path + now + ".mp4")
         elif person_status == 1 and keyIn_status == 0 and out_count > 10:
             if person_out == 0:
                 person_out = 1
@@ -224,7 +229,8 @@ while True:
                 NG_count = NG_count + 1
                 if video_status == 1:
                     video_status = 0
-                    #out.release()
+                    save_count = 0
+                    out.release()
                 '''
                 today = datetime.date.today()
                 now = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
@@ -250,14 +256,12 @@ while True:
         pstring = "Out"
         cv2.putText(show_img, pstring, (10,25), cv2.FONT_HERSHEY_DUPLEX, 1, (255,0,0), 2)
     
-    #if video_status == 1:
-    #    out.write(show_img)
     cv2.imshow('predict', show_img)
     cv2.imshow('show', show_img_o)
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-#if video_status == 1:
-#    out.release()
+if video_status == 1:
+    out.release()
 cap.release()
 
