@@ -1,0 +1,105 @@
+https://atceiling.blogspot.com/2020/03/raspberry-pi-61mysqlmariadb.html
+https://www.itread01.com/content/1541934367.html
+
+
+sudo apt update && sudo apt upgrade
+
+sudo apt-get install mariadb-server
+
+y
+
+sudo mysql_secure_installation
+
+依照提示輸入 root的密碼 Change the root password? [Y/n] 
+ml6a01
+
+移除匿名使用者  Remove anonymous users? [Y/n]
+n
+不允許 root遠端登入 Disallow root login remotely? [Y/n] 
+n
+移除 test 資料庫及存取權 Remove test database and access to it? [Y/n]
+n
+重新載入權限的資料表  Reload privilege tables now? [Y/n] 
+y
+
+
+!!!!! key
+開啟 /etc/mysql/mariadb.conf.d/50-server.cnf
+註釋掉bind-address
+
+sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf 
+註釋掉 
+bind-address = 127.0.0.1
+
+sudo mysql -u root -p
+
+系統將提示輸入密碼，輸入上述設定的 root 用戶密碼。登入後，就可以輸入MySQL命令來建立、更改和刪除資料庫。
+透過此界面，可以管理用戶帳號及權限。
+如要離開 MySQL 資料庫系統，有兩種方法，第一種是在 MySQL 系統的提示字元輸入 quit 或 exit 結束系統。
+第二種方法是直接按 Ctrl ＋  D 離開MySQL。
+
+
+CREATE USER 'hid_record'@'%' IDENTIFIED by 'hid_record$dss0';
+GRANT ALL PRIVILEGES ON *.* TO 'hid_record'@'%' IDENTIFIED BY 'hid_record$dss0' WITH GRANT OPTION;
+#GRANT ALL PRIVILEGES ON wordpress.* TO 'hid_record'@'%';
+#GRANT USAGE ON*.*TO'hid_record'@'%'IDENTIFIED BY 'hid_record$dss0'WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+
+Ctrl ＋  D
+
+sudo mysql -u hid_record -p
+hid_record$dss0
+CREATE DATABASE hid_record_db;
+USE hid_record_db;
+create table hid_record(user_hid varchar(45),location_number int, entry_time datetime) DEFAULT CHARSET=utf8;
+DESC hid_record;
+
+
+#DROP DATABASE hid_record;
+#DROP table hid_record;
+
+
+
+
+[MySQL資料庫系統指令]
+● 顯示目前登入使用者
+MariaDB [example]> SELECT USER();
+
+● 顯示資料庫版本
+MariaDB [example]> SELECT VERSION();
+
+● 顯示已經建立的 database
+MariaDB [(none)]> SHOW databases;
+
+● 建立 example 資料庫：
+MariaDB [(none)]>CREATE DATABASE example;
+
+● 選擇資料庫
+MariaDB [zsystem]> USE example;
+
+● 刪除資料庫
+MariaDB [(none)]> DROP DATABASE example;
+
+
+● 建立資料表
+MariaDB [example]> create table customer(name varchar(10), join_date date) DEFAULT CHARSET=utf8;
+
+● 查看資料表
+MariaDB [example]> DESC customer;
+
+● 刪除資料表
+MariaDB [example]> DROP table customer;
+
+● 清空資料表內資料
+MariaDB [example]> DELETE FROM customer;
+
+● 建立 ceiling 使用者，密碼為 your_password
+MariaDB [example]> CREATE USER 'ceiling'@'localhost' IDENTIFIED by 'your_password';
+
+● 設定資料庫權限，ALL PRIVILEGES 可以換成 SELECT, INSERT, DELETE等指令。
+MariaDB [example]> GRANT ALL PRIVILEGES ON wordpress.* TO 'ceiling'@'localhost';
+
+● 更新權限表，可以讓剛剛更改的權限立刻生效
+FLUSH PRIVILEGES;
+
+

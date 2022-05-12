@@ -1,0 +1,108 @@
+https://blog.gtwang.org/iot/raspberry-pi/raspberry-pi-samba-setup-tutorial/
+
+
+
+sudo apt-get update
+sudo apt-get install samba
+sudo apt-get install samba-common-bin
+
+sudo pdbedit -a -u pi
+
+ml6a01
+ml6a01
+
+sudo nano /etc/samba/smb.conf
+
+
+/etc/samba
+
+[global]
+  # 允許使用連結檔
+  follow symlinks = yes
+
+  # 允許連結到目錄之外
+  wide links = yes
+
+  # 關閉 CIFS UNIX extensions
+  unix extensions = no
+
+[pi]
+  comment = pi
+  path = /home/pi/Desktop/HID/sharefloder
+  read only = no
+  guest ok = no
+  browseable = yes
+  writeable = yes
+  create mask = 0777
+  directory mask = 0777
+  public = yes
+
+
+service smbd restart
+
+sudo usermod -a -G sambashare pi
+sudo smbpasswd -a pi
+sudo chmod -R 777 /home/pi/Desktop/HID/sharefloder/
+
+
+smb://192.168.0.150/pi
+smb://127.20.10.13/pi/home/pi/Desktop/HID/sharefloder/
+
+hostname -I
+ifconfig
+
+
+
+
+
+
+[my_share]
+path = /home/edwards
+valid_users = edwards
+read only = no
+guest ok = yes
+browseable = yes
+
+
+
+import tempfile
+import smb
+import shutil
+
+from smb.SMBConnection import SMBConnection
+
+share_name          = "my_share"
+user_name           = "edwards"
+password            = "######"             # secret :-)
+local_machine_name  = "laptop"             # arbitrary
+server_machine_name = "edwards-Yocto"      # MUST match correctly
+server_IP           = "192.162.2.1"        # as must this            
+
+# create and establish connection
+conn = SMBConnection(user_name, password, local_machine_name, server_machine_name, use_ntlm_v2 = True)
+
+assert conn.connect(server_IP, 139)
+
+# print list of files at the root of the share
+files = conn.listPath(share_name, "/") 
+for item in files:
+    print item.filename
+
+# check if the file we want is there
+sf = conn.getAttributes(share_name, "rti_license.dat")
+print sf.file_size
+print sf.filename
+
+# create a temporary file for the transfer
+file_obj = tempfile.NamedTemporaryFile(mode='w+t', delete=False)
+file_name = file_obj.name
+file_attributes, copysize = conn.retrieveFile(share_name, "rti_license.dat", file_obj)
+print copysize
+file_obj.close()
+
+# copy temporary file 
+shutil.copy(file_name, "rti_license.dat")
+
+# close connection
+conn.close()
+

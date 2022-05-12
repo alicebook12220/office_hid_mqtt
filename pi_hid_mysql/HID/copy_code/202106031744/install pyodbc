@@ -1,0 +1,7 @@
+sudo apt-get install python3-MySQLdb
+
+sudo apt-get install python3-pyodbc
+
+sudo apt-get install python3-pymysql
+sudo apt-get pandas
+

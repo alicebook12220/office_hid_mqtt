@@ -1,0 +1,62 @@
+# -*- coding: utf-8 -* 
+# https://blog.csdn.net/qq_38203551/article/details/106133761?utm_medium=distribute.pc_relevant.none-task-blog-baidujs_title-0&spm=1001.2101.3001.4242
+
+import http.client # --python3.x
+#import httplib --python2.x
+import time
+import os
+def get_webservertime(host):
+    conn=http.client.HTTPConnection(host) # --python3.x
+    #conn=httplib.HTTPConnection(host) --python2.x
+    conn.request("GET", "/")
+    r=conn.getresponse()
+    #r.getheaders() #获取所有的http头
+    ts=  r.getheader('date') #获取http头date部分
+    #print(ts)
+     
+    #将GMT时间转换成北京时间
+    ltime= time.strptime(ts[5:25], "%d %b %Y %H:%M:%S")
+    #print(ltime)
+    ttime=time.localtime(time.mktime(ltime)+8*60*60)
+    #print(ttime)
+    dat="%u-%02u-%02u"%(ttime.tm_year,ttime.tm_mon,ttime.tm_mday)
+    tm="%02u:%02u:%02u"%(ttime.tm_hour,ttime.tm_min,ttime.tm_sec)
+    cur_time = dat+" "+tm
+    #print (dat,tm)
+    print(cur_time)
+    command = "sudo date --s='{}'".format(cur_time)
+    #print(command)
+    os.system(command)
+if __name__ == '__main__':
+    try:
+        get_webservertime('www.jd.com') #参数取决于你可以访问的IP地址，外网情况下可以是外网IP，内网可以是服务器可以访问的IP。可以在树莓派浏览器中输入你要填入的IP，能成功响应的即可使用。
+        print("校对成功！！！")
+    except:
+        print("检查与服务器的网络连接，校对失败！")
+
+#版权声明：本文为CSDN博主「------柒末雪------」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+#原文链接：https://blog.csdn.net/qq_38203551/article/details/106133761
+"""
+##自动执行脚本
+
+通过crontab 实现定时校对
+sudo chmod +x /home/pi/Desktop/pi_hid_mysql-main/HID/time_set.py
+打开终端输入crontab -e。
+如果是vim编辑，输入i即可编辑crontab定时脚本。
+#在底部输入*/2 * * * * /usr/bin/python /home/pi/Desktop/time_set.py
+在底部输入*/2 * * * * /usr/bin/python3 /home/pi/Desktop/pi_hid_mysql-main/HID/time_set.py
+按ESC 输入:wq!即可保存退出。
+可通过crontab -l 查看刚刚保存的crontab定时脚本。
+sudo service cron restart
+以上实现的是每隔两分钟运行python脚本对时
+通过run.desktop文件方式实现开机自动对时
+打开终端执行sudo vim ~/.config/autostart/run.desktop
+建议先查看.config路径下是否存在autostart文件夹，没有自己新建一个。
+
+## 编辑run.desktop内容如下：
+[Desktop Entry]
+Type = Application
+Exec = python /home/pi/Desktop/time_set.py  // 可更改为自己python脚本放置路径
+
+## 重启树莓派生效
+"""

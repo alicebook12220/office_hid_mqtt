@@ -1,0 +1,29 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ML6A01</title>
+    </head>
+    <body onload="flashMessage()">
+
+        <form method="post" name='HID' style>
+            <center><input type="text" autocomplete="off" name='hid' id="hid" style="font-size:40px" autofocus></center>
+            <input type="submit" name='submit' style="position: absolute;left: -9999px;">
+        </form>
+        <center><h1 id="stat" style="font-size:100px;" >{{text}}</h1></center>
+        <center><h1 style="color:red;font-size:200px;">{{alarm_msg}}</h1></center>
+
+        
+
+
+        <script>
+            function flashMessage() {
+              if ("{{ j }}" == "True") {
+                alert_words  = " 你沒有進入權限";
+                alert(alert_words);
+              }
+            }
+          </script>    
+    </body>
+</html>
+

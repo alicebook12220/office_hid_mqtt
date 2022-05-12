@@ -1,0 +1,11 @@
+sudo nano /etc/dhcpcd.conf
+
+# Example static IP configuration:
+interface wlan0
+static ip_address=192.168.50.68/24
+# statci ip6_address=fd51:42f8:case:d92e::ff/64
+# static router=192.168.0.1
+static domain_name_servers=192.168.50.13
+
+sudo systemctl restart dhcpcd
+

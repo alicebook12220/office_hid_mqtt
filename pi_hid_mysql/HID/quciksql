@@ -1,0 +1,13 @@
+ssh pi@192.168.50.13
+sudo mysql -u root -p
+
+
+USE hid_record_db;
+create table employee(DEPARTMENT varchar(45),WORKERID varchar(45),NAME varchar(45) ,HIDCARD varchar(45),ABGROUP varchar(45),COLOR varchar(45)) DEFAULT CHARSET=utf8;
+create table summary_record(user_hid varchar(45),location_number varchar(45), entry_time datetime,DEPARTMENT varchar(45),WORKERID varchar(45),NAME varchar(45) ,HIDCARD varchar(45),ABGROUP varchar(45),COLOR varchar(45)) DEFAULT CHARSET=utf8;
+
+
+select * from hid_record;
+
+DESC employee;
+DESC summary_record;

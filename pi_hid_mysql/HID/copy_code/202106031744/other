@@ -1,0 +1,19 @@
+crontab -e
+
+*/1****python3/home/pi/Desktop/HID/signin_history_read_HID_upload_148.py
+
+
+
+sudo service cron restart
+
+
+
+#!/usr/bin/python3
+
+
+
+
+sudo chmod + x /home/pi/Desktop/HID/signin_history_read_HID_upload_148.py
+
+
+sudo chmod + x /home/pi/signin_history_read_HID_upload_148.py

@@ -1,0 +1,32 @@
+#!/usr/bin/python3
+
+chmod +x /home/pi/Desktop/pi_hid_mysql-main/HID/HID/ttt.py
+chmod +x /home/pi/Desktop/pi_hid_mysql-main/HID/HID/signin_history_online.py
+chmod +x /home/pi/Desktop/pi_hid_mysql-main/HID/HID/update_employee.py
+
+sudo crontab -e
+@reboot /usr/bin/python3 /home/pi/Desktop/pi_hid_mysql-main/HID/HID/ttt.py >> /home/pi/Desktop/pi_hid_mysql-main/HID/HID/ttt_log.txt
+@reboot /usr/bin/python3 /home/pi/Desktop/pi_hid_mysql-main/HID/HID/signin_history_online.py >> /home/pi/Desktop/pi_hid_mysql-main/HID/HID/signin_history_online_log.txt
+30 14 * * */usr/bin/python3 /home/pi/Desktop/pi_hid_mysql-main/HID/HID/update_employee.py >> /home/pi/Desktop/pi_hid_mysql-main/HID/HID/update_employee_log.txt
+
+
+
+crontab -e
+
+*/1****python3/home/pi/Desktop/HID/signin_history_read_HID_upload_148.py
+
+
+
+sudo service cron restart
+
+
+
+#!/usr/bin/python3
+
+
+
+
+sudo chmod +x /home/pi/Desktop/HID/signin_history_read_HID_upload_148.py
+
+
+sudo chmod +x /home/pi/signin_history_read_HID_upload_148.py
